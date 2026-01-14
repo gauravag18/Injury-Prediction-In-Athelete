@@ -1,0 +1,7 @@
+data/penn_action/frames/
+outputs/poses_raw/
+outputs/poses_clean/
+*.npy
+*.pkl
+*.cbm
+__pycache__/
