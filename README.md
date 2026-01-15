@@ -60,7 +60,6 @@ Injury_Prediction_In_Athlete/
 ├── .gitignore
 └── README.md
 
-text
 
 ## ⚙️ Installation
 
@@ -69,17 +68,13 @@ Create a virtual environment (recommended) and install dependencies:
 ```bash
 pip install -r requirements.txt
 Dependencies
-numpy
 
-pandas
-
-scikit-learn
-
-scipy
-
-joblib
-
-matplotlib
+-numpy
+-pandas
+-scikit-learn
+-scipy
+-joblib
+-matplotlib
 
 🔄 Data Pipeline
 The complete preprocessing pipeline is implemented in:
@@ -87,19 +82,13 @@ src/data_pipeline/run_pipeline.py
 
 Pipeline steps:
 
-Extract action labels
-
-Extract raw joint coordinates
-
-Clean & normalize poses
-
-Compute joint angles
-
-Engineer statistical features
-
-Assign injury risk labels
-
-Create final CSV dataset
+-Extract action labels
+-Extract raw joint coordinates
+-Clean & normalize poses
+-Compute joint angles
+-Engineer statistical features
+-Assign injury risk labels
+-Create final CSV dataset
 
 Run the pipeline:
 
@@ -117,17 +106,14 @@ python src/models/decision_tree.py
 3️⃣ Hybrid Rule-Augmented Logistic Regression (Final Model)
 bash
 python src/models/train.py
+
 This script:
 
-Trains a relaxed decision tree to extract biomechanical rules
-
-Encodes tree leaves as rule features
-
-Combines original features + rule features
-
-Trains logistic regression on the hybrid feature space
-
-Saves all trained artifacts to models/trained/
+-Trains a relaxed decision tree to extract biomechanical rules
+-Encodes tree leaves as rule features
+-Combines original features + rule features
+-Trains logistic regression on the hybrid feature space
+-Saves all trained artifacts to models/trained/
 
 📊 Evaluation
 Evaluate all saved models:
@@ -136,15 +122,12 @@ bash
 python src/models/evaluate.py
 Metrics reported:
 
-Accuracy
+-Accuracy
+-Macro F1-score
+-Precision/Recall per class
+-Confusion matrices
 
-Macro F1-score
-
-Precision/Recall per class
-
-Confusion matrices
-
-Note: Final performance is reported on a held-out test set (80–20 split). Full-dataset evaluation is used only for diagnostic comparison.
+Note: Final performance is reported on a held-out test set (80–20 split). Full dataset evaluation is used only for diagnostic comparison.
 
 📈 Visualizations
 Generate plots:
@@ -154,13 +137,10 @@ python src/models/plot.py
 python src/models/chart.py
 Generated figures:
 
-Confusion matrices (all models)
-
-Accuracy & Macro-F1 comparison
-
-Per-class recall bar chart
-
-Risk score distribution (hybrid model)
+-Confusion matrices (all models)
+-Accuracy & Macro-F1 comparison
+-Per-class recall bar chart
+-Risk score distribution (hybrid model)
 
 Saved to: docs/figures/
 
@@ -196,13 +176,11 @@ Why this model?
 All experiments use fixed random seeds (random_state=42)
 
 🚀 Future Work
-Real-time inference directly from video streams
-
-Integration with a lightweight web UI (FastAPI/Streamlit)
-
-Extension to additional sports activities
-
-Incorporation of anomaly detection based injury signals
+-Real-time inference directly from video streams
+-Integration with a lightweight web UI (FastAPI/Streamlit)
+-Extension to additional sports activities
+-Incorporation of anomaly detection based injury signals
 
 👤 Author
-Gaurav Agarwal
+Gaurav Agarwalla
+
