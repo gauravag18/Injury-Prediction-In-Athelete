@@ -1,9 +1,10 @@
 import os
 import numpy as np
 
-ANGLE_DIR = "../../outputs/angles"
-POSE_DIR  = "../../outputs/poses_clean"
-OUT_DIR   = "../../outputs/features"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+ANGLE_DIR = os.path.join(PROJECT_ROOT, "outputs", "angles")
+POSE_DIR  = os.path.join(PROJECT_ROOT, "outputs", "poses_clean")
+OUT_DIR   = os.path.join(PROJECT_ROOT, "outputs", "features")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # Pose joint indices

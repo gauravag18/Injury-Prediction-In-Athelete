@@ -2,8 +2,9 @@ import os
 import numpy as np
 from scipy.signal import savgol_filter
 
-IN_DIR = "../../outputs/poses_raw"
-OUT_DIR = "../../outputs/poses_clean"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+IN_DIR = os.path.join(PROJECT_ROOT, "outputs", "penn_raw")
+OUT_DIR = os.path.join(PROJECT_ROOT, "outputs", "poses_clean")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 TARGET_FRAMES = 100

@@ -2,8 +2,9 @@ import numpy as np
 import os
 from scipy.stats import rankdata
 
-FEATURE_DIR = "../../outputs/features"
-OUT_DIR     = "../../outputs/features"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+FEATURE_DIR = os.path.join(PROJECT_ROOT, "outputs", "features")
+OUT_DIR     = os.path.join(PROJECT_ROOT, "outputs", "features")
 
 X     = np.load(os.path.join(FEATURE_DIR, "X.npy"))
 files = np.load(os.path.join(FEATURE_DIR, "files.npy"))

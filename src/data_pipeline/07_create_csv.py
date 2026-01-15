@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import os
 
-FEATURE_DIR = "../../outputs/features"
-OUT_PATH = "../../outputs/csv/dataset.csv"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+FEATURE_DIR = os.path.join(PROJECT_ROOT, "outputs", "features")
+OUT_PATH = os.path.join(PROJECT_ROOT, "outputs", "csv", "dataset.csv")
 
 X = np.load(os.path.join(FEATURE_DIR, "X.npy"))
 y = np.load(os.path.join(FEATURE_DIR, "y.npy"))

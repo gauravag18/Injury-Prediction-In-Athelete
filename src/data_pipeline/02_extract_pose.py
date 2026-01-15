@@ -2,8 +2,9 @@ import os
 import numpy as np
 import scipy.io as sio
 
-LABEL_DIR = "../../data/penn_action/labels"
-OUT_DIR = "../../outputs/poses_raw"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+LABEL_DIR = os.path.join(PROJECT_ROOT, "data", "penn_action", "labels")
+OUT_DIR = os.path.join(PROJECT_ROOT, "outputs", "poses_raw")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 IMG_W, IMG_H = 640.0, 480.0

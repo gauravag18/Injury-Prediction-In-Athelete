@@ -2,7 +2,8 @@ import os
 import scipy.io as sio
 from collections import Counter
 
-LABEL_DIR = "../../data/penn_action/labels"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+LABEL_DIR = os.path.join(PROJECT_ROOT, "data", "penn_action", "labels")
 
 actions = []
 
@@ -12,6 +13,7 @@ for file in os.listdir(LABEL_DIR):
         action = mat["action"][0]
         actions.append(action)
 
+from collections import Counter
 action_counts = Counter(actions)
 
 print("Actions found:\n")
