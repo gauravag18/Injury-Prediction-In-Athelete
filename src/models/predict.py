@@ -5,29 +5,64 @@ import joblib
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 MODEL_DIR = os.path.join(PROJECT_ROOT, "models", "trained")
 
-model = joblib.load(os.path.join(MODEL_DIR, "hybrid_rule_aug_lr.pkl"))
+# BEST MODEL: XGBoost
+xgb_bundle = joblib.load(os.path.join(MODEL_DIR, "xgboost.pkl"))
+xgb_model = xgb_bundle["model"]
+xgb_imputer = xgb_bundle["imputer"]
+xgb_scaler = xgb_bundle["scaler"]
+
+# INTERPRETABLE FALLBACK: Hybrid Rule-Augmented LR
+hybrid_model = joblib.load(os.path.join(MODEL_DIR, "hybrid_rule_aug_lr.pkl"))
 preprocess = joblib.load(os.path.join(MODEL_DIR, "preprocess.pkl"))
 tree = joblib.load(os.path.join(MODEL_DIR, "decision_tree.pkl"))
 rule_encoder = joblib.load(os.path.join(MODEL_DIR, "rule_encoder.pkl"))
 
-# Prediction function
-def predict_risk(feature_vector):
+# Prediction functions
+def predict_risk_xgboost(feature_vector):
     """
-    Predict injury risk for a single sample.
+    Predict injury risk using the best-performing XGBoost model.
 
     Parameters
     ----------
-    feature_vector : np.ndarray, shape (n_features,)
-        Engineered biomechanical features produced by the data pipeline
-        (same order as columns in outputs/csv/dataset.csv).
+    feature_vector : np.ndarray of shape (n_features,)
+        Engineered biomechanical features (same order as dataset.csv)
 
     Returns
     -------
     predicted_class : int
-        Injury risk class (0 = low, 1 = medium, 2 = high).
+        0 = low, 1 = medium, 2 = high
 
     risk_score : float
-        Continuous injury risk score.
+        Continuous injury risk score
+    """
+
+    X = feature_vector.reshape(1, -1)
+
+    # Preprocess
+    X_proc = xgb_scaler.transform(xgb_imputer.transform(X))
+
+    # Prediction
+    probs = xgb_model.predict_proba(X_proc)[0]
+    predicted_class = int(np.argmax(probs))
+
+    # Risk score (monotonic)
+    risk_score = probs[1] + 2.0 * probs[2]
+
+    return predicted_class, float(risk_score)
+
+
+def predict_risk_hybrid(feature_vector):
+    """
+    Predict injury risk using the interpretable hybrid rule-augmented LR model.
+
+    Parameters
+    ----------
+    feature_vector : np.ndarray of shape (n_features,)
+
+    Returns
+    -------
+    predicted_class : int
+    risk_score : float
     """
 
     X = feature_vector.reshape(1, -1)
@@ -35,18 +70,43 @@ def predict_risk(feature_vector):
     # Preprocess original features
     X_pre = preprocess.transform(X)
 
-    # Generate rule-based features
+    # Generate rule features
     leaf = tree.apply(X_pre)
     rule_feat = rule_encoder.transform(leaf.reshape(-1, 1))
 
     # Hybrid feature vector
     X_hybrid = np.hstack([X_pre, rule_feat])
 
-    # Prediction
-    probs = model.predict_proba(X_hybrid)[0]
-    predicted_class = int(model.predict(X_hybrid)[0])
+    probs = hybrid_model.predict_proba(X_hybrid)[0]
+    predicted_class = int(np.argmax(probs))
 
-    # Risk score definition
-    risk_score = probs[1] + 2 * probs[2]
+    risk_score = probs[1] + 2.0 * probs[2]
 
     return predicted_class, float(risk_score)
+
+
+def predict_risk(feature_vector, model_type="xgboost"):
+    """
+    Unified prediction interface.
+
+    Parameters
+    ----------
+    feature_vector : np.ndarray
+    model_type : str
+        "xgboost" (default, best accuracy)
+        "hybrid"  (interpretable alternative)
+
+    Returns
+    -------
+    predicted_class : int
+    risk_score : float
+    """
+
+    if model_type == "xgboost":
+        return predict_risk_xgboost(feature_vector)
+    elif model_type == "hybrid":
+        return predict_risk_hybrid(feature_vector)
+    else:
+        raise ValueError(
+            "Invalid model_type. Choose 'xgboost' or 'hybrid'."
+        )
