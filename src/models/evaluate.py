@@ -55,6 +55,14 @@ xgb = xgb_bundle["model"]
 xgb_imputer = xgb_bundle["imputer"]
 xgb_scaler = xgb_bundle["scaler"]
 
+# EBM (BEST MODEL)
+ebm_bundle = joblib.load(
+    os.path.join(MODEL_DIR, "ebm.pkl")
+)
+ebm = ebm_bundle["model"]
+ebm_imputer = ebm_bundle["imputer"]
+ebm_scaler = ebm_bundle["scaler"]
+
 # XGBoost → LR Stack
 stack_bundle = joblib.load(
     os.path.join(MODEL_DIR, "xgb_lr_stack.pkl")
@@ -93,10 +101,15 @@ X_hybrid = np.hstack([X_pre, rule_features])
 y_pred_hybrid = hybrid_lr.predict(X_hybrid)
 evaluate_model("Hybrid Rule-Augmented LR", y, y_pred_hybrid)
 
-# XGBoost (Best Performance)
+# XGBoost
 X_xgb = xgb_scaler.transform(xgb_imputer.transform(X))
 y_pred_xgb = xgb.predict(X_xgb)
-evaluate_model("XGBoost (Best)", y, y_pred_xgb)
+evaluate_model("XGBoost", y, y_pred_xgb)
+
+# EBM (BEST PERFORMANCE)
+X_ebm = ebm_scaler.transform(ebm_imputer.transform(X))
+y_pred_ebm = ebm.predict(X_ebm)
+evaluate_model("EBM (Best Model)", y, y_pred_ebm)
 
 # XGBoost → Logistic Regression Stack
 X_stack = stack_scaler.transform(stack_imputer.transform(X))
