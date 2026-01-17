@@ -35,11 +35,10 @@ xgb = xgb_bundle["model"]
 xgb_imputer = xgb_bundle["imputer"]
 xgb_scaler = xgb_bundle["scaler"]
 
-stack_bundle = joblib.load(os.path.join(MODEL_DIR, "xgb_lr_stack.pkl"))
-stack_xgb = stack_bundle["xgb"]
-stack_meta = stack_bundle["meta_lr"]
-stack_imputer = stack_bundle["imputer"]
-stack_scaler = stack_bundle["scaler"]
+ebm_bundle = joblib.load(os.path.join(MODEL_DIR, "ebm.pkl"))
+ebm = ebm_bundle["model"]
+ebm_imputer = ebm_bundle["imputer"]
+ebm_scaler = ebm_bundle["scaler"]
 
 # Logistic Regression
 y_pred_lr = lr_pipeline.predict(X)
@@ -58,10 +57,9 @@ y_pred_hybrid = hybrid_lr.predict(X_hybrid)
 X_xgb = xgb_scaler.transform(xgb_imputer.transform(X))
 y_pred_xgb = xgb.predict(X_xgb)
 
-# Stacked XGB → LR
-X_stack = stack_scaler.transform(stack_imputer.transform(X))
-stack_probs = stack_xgb.predict_proba(X_stack)
-y_pred_stack = stack_meta.predict(stack_probs)
+# EBM (BEST MODEL)
+X_ebm = ebm_scaler.transform(ebm_imputer.transform(X))
+y_pred_ebm = ebm.predict(X_ebm)
 
 # Helper: Confusion matrix plot
 def save_confusion(y_true, y_pred, title, filename):
@@ -77,8 +75,8 @@ def save_confusion(y_true, y_pred, title, filename):
 save_confusion(y, y_pred_lr, "Logistic Regression", "confusion_lr.png")
 save_confusion(y, y_pred_dt, "Decision Tree", "confusion_dt.png")
 save_confusion(y, y_pred_hybrid, "Hybrid Rule-Augmented LR", "confusion_hybrid.png")
-save_confusion(y, y_pred_xgb, "XGBoost (Best Performance)", "confusion_xgb.png")
-save_confusion(y, y_pred_stack, "XGBoost + LR Stack", "confusion_stack.png")
+save_confusion(y, y_pred_xgb, "XGBoost", "confusion_xgb.png")
+save_confusion(y, y_pred_ebm, "EBM (Best Model)", "confusion_ebm.png")
 
 # Accuracy & Macro-F1 comparison
 models = [
@@ -86,7 +84,7 @@ models = [
     "Decision Tree",
     "Hybrid Model",
     "XGBoost",
-    "XGBoost + LR Stack"
+    "EBM (Best)"
 ]
 
 accuracy = [
@@ -94,7 +92,7 @@ accuracy = [
     accuracy_score(y, y_pred_dt),
     accuracy_score(y, y_pred_hybrid),
     accuracy_score(y, y_pred_xgb),
-    accuracy_score(y, y_pred_stack)
+    accuracy_score(y, y_pred_ebm)
 ]
 
 macro_f1 = [
@@ -102,7 +100,7 @@ macro_f1 = [
     f1_score(y, y_pred_dt, average="macro"),
     f1_score(y, y_pred_hybrid, average="macro"),
     f1_score(y, y_pred_xgb, average="macro"),
-    f1_score(y, y_pred_stack, average="macro")
+    f1_score(y, y_pred_ebm, average="macro")
 ]
 
 x = np.arange(len(models))
@@ -113,7 +111,7 @@ plt.bar(x - width/2, accuracy, width, label="Accuracy")
 plt.bar(x + width/2, macro_f1, width, label="Macro F1")
 plt.xticks(x, models, rotation=20)
 plt.ylabel("Score")
-plt.title("Model Performance Comparison (XGBoost Best)")
+plt.title("Model Performance Comparison (EBM Best)")
 plt.legend()
 plt.tight_layout()
 plt.savefig(os.path.join(FIG_DIR, "model_comparison.png"))
@@ -127,7 +125,7 @@ recall_data = [
     recall_score(y, y_pred_dt, average=None, labels=labels),
     recall_score(y, y_pred_hybrid, average=None, labels=labels),
     recall_score(y, y_pred_xgb, average=None, labels=labels),
-    recall_score(y, y_pred_stack, average=None, labels=labels)
+    recall_score(y, y_pred_ebm, average=None, labels=labels)
 ]
 
 x = np.arange(len(labels))
@@ -146,9 +144,9 @@ plt.tight_layout()
 plt.savefig(os.path.join(FIG_DIR, "recall_per_class.png"))
 plt.close()
 
-# Risk score distribution (BEST MODEL = XGBoost)
-xgb_probs = xgb.predict_proba(X_xgb)
-risk_score = xgb_probs[:, 1] + 2 * xgb_probs[:, 2]
+# Risk score distribution (BEST MODEL = EBM)
+ebm_probs = ebm.predict_proba(X_ebm)
+risk_score = ebm_probs[:, 1] + 2 * ebm_probs[:, 2]
 
 plt.figure(figsize=(8, 5))
 plt.hist(risk_score[y == 0], bins=20, alpha=0.6, label="Low Risk (0)")
@@ -156,7 +154,7 @@ plt.hist(risk_score[y == 1], bins=20, alpha=0.6, label="Medium Risk (1)")
 plt.hist(risk_score[y == 2], bins=20, alpha=0.6, label="High Risk (2)")
 plt.xlabel("Risk Score")
 plt.ylabel("Frequency")
-plt.title("Risk Score Distribution (XGBoost – Best Model)")
+plt.title("Risk Score Distribution (EBM – Best Model)")
 plt.legend()
 plt.tight_layout()
 plt.savefig(os.path.join(FIG_DIR, "risk_score_distribution.png"))
