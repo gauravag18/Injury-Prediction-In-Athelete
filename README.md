@@ -35,7 +35,37 @@ This project solves the challenge of quantitative injury risk assessment by impl
 
 ### Architecture Overview
 
-The system is structured as a modular Python based data science pipeline, prioritizing data integrity, feature relevance, and model interpretability. The process flow moves sequentially through dedicated stages:
+The system is structured as a modular Python based data science pipeline, prioritizing data integrity, feature relevance, and model interpretability.
+
+#### System Architecture
+
+```mermaid
+graph LR
+    subgraph Data Layer
+        DB[(Penn Action Dataset)]
+        CSV[(Processed dataset.csv)]
+    end
+    subgraph Processing Pipeline
+        DAP[Data Acquisition & Pose Extraction]
+        PRE[Data Preprocessing]
+        FE[Feature Engineering]
+    end
+    subgraph Modeling & Prediction
+        TRAIN[Model Training]
+        EVAL[Evaluation & Visualization]
+        PREDICT[Prediction Interface]
+    end
+    DB --> DAP
+    DAP --> PRE
+    PRE --> FE
+    FE --> CSV
+    CSV --> TRAIN
+    TRAIN --> EVAL
+    TRAIN --> PREDICT
+    PREDICT --> OUT[Injury Risk Score]
+```
+
+The process flow moves sequentially through dedicated stages:
 1.  **Data Acquisition & Pose Extraction:** Sourcing and preparing the foundational Penn Action dataset files (`.mat`).
 2.  **Data Preprocessing:** Utilizing numerical and statistical techniques, powered by `numpy` and `scipy` (including Savitzky–Golay smoothing and linear resampling) to stabilize pose time series data.
 3.  **Feature Engineering:** Calculating critical biomechanical features (joint angles) using explicit trigonometric functions derived from pose key points.
@@ -154,6 +184,19 @@ The project is executed in two primary phases: running the data preparation pipe
 ### Phase 1: Data Pipeline Execution
 
 The core feature extraction and engineering process is managed within the `src/data_pipeline/` directory. It is essential to run these scripts in sequence to generate the final feature matrix (`outputs/csv/dataset.csv`). While a `run_pipeline.py` exists, it often orchestrates the sequential execution of the numbered modules (01 to 07).
+
+#### Data Pipeline Workflow
+
+```mermaid
+graph TD
+    A[Raw Penn Action Data .mat] -->|01_find_actions, 02_extract_pose| B(Raw Pose Data)
+    B -->|03_clean_normalize_pose| C{Clean & Normalized Pose}
+    C -->|04_joint_angles| D[Biomechanical Angles]
+    C -->|05_feature_creation| E[Aggregated Features]
+    D --> E
+    E -->|06_risk_label| F[Labeled Dataset]
+    F -->|07_create_csv| G[outputs/csv/dataset.csv]
+```
 
 Key processes handled by the pipeline:
 
